@@ -1,6 +1,22 @@
-export class Airtel {
-protected token = ''
+import axios from "axios"
 
+export class Airtel {
+ public client_id;
+    public client_secret;
+    public Client $client;
+    protected public_key = '';
+    protected token;
+    protected country = 'KE';
+    protected currency = 'KES';
+
+      constructor(options = {}) {
+            this.client = axios.create({
+                  baseUrl: options.env == 'staging'
+                    ? 'https://openapiuat.airtel.africa/'
+                    : 'https://openapi.airtel.africa/'
+            });
+      }
+      
 protected authorize(token = null) {
 const inputBody = '{
       "client_id": "*****************************",
@@ -12,19 +28,12 @@ const headers = {
   'Accept':'*/*'
 };
 
-fetch('https://openapiuat.airtel.africa/auth/oauth2/token',
-{
-  method: 'POST',
-  body: inputBody,
-  headers: headers
-})
+this.client.post('/auth/oauth2/token', inputBody,headers)
 .then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
+    return res.data;
 
-this.token = '',
+this.token = res.data.access_token,
+});
 return this
 }
 }
