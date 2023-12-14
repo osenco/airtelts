@@ -39,3 +39,23 @@ interface AirtelIpnPayload {
 		msisdn: string;
 	};
 }
+
+interface AirtelRefundResponse {
+	status: {
+		code: number;
+		message: string;
+		success: boolean;
+	};
+	transaction: {
+		amount: number;
+		country: string;
+		currency: string;
+		id: string;
+	};
+	reference: string;
+	subscriber: {
+		country: string;
+		currency: string;
+		msisdn: string;
+	};
+}
