@@ -4,6 +4,23 @@ import constants from "constants";
 
 /**
  * Main Airtel Africa class that is the core of the SDK
+ *
+ * @param client_id App client ID
+ * @param client_secret App client secret
+ * @param country Country code
+ * @param currency Currency code
+ * @param env Environment
+ * @param pin (optional) A 4 digit PIN
+ * @param public_key (optional) A public key string used to encrypt the PIN
+ * 
+ * @method authorize Authorize Airtel and get access token
+ * @method encrypt Encrypt data using the public key
+ * @method user Get user details from Airtel using phone number
+ * @method prompt Send a USSD prompt to a user to process a payment by entering their PIN
+ * @method status Check transaction status
+ * @method refund Refund a transaction
+ * @method disburse Disburse funds to a user
+ * @method reconcile Reconcile a transaction
  */
 export default class Airtel {
 	protected api: AxiosInstance;
@@ -11,14 +28,6 @@ export default class Airtel {
 
 	/**
 	 * Setup Airtel class
-	 *
-	 * @param client_id App client ID
-	 * @param client_secret App client secret
-	 * @param country Country code
-	 * @param currency Currency code
-	 * @param env Environment
-	 * @param pin (optional) A 4 digit PIN
-	 * @param public_key (optional) A public key string used to encrypt the PIN
 	 */
 	constructor(
 		protected client_id: string,
