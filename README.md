@@ -30,29 +30,58 @@ bun add @osenco/airtel
 
 ## Usage
 
+### Instantiate the SDK
+
 ```typescript
 import { Airtel } from '@osenco/airtel';
 
-try {
-    const airtel = new Airtel();
+const client_id =""
+const client_secret = ""
+const country = "KE"
+const currency = "KES"
+const env = "live"
+const pin = ""
+const public_key = ""
+```
+#### For collections API only
+```typescript
+const airtel = new Airtel(client_id, client_secret, country, currency, env);
+```
 
+#### If handling disbursements as well
+```typescript
+const airtel = new Airtel(client_id, client_secret, country, currency, env, pin, public_key);
+```
+
+### Generate Token
+
+Use the `authorize` method to generate a token. The token is valid for 1 hour.
+
+```typescript
+await airtel.authorize();
+```
+
+### Send a USSD Request
+
+Use the `prompt` method to send a USSD push to a customer to complete the payment by entering their PIN.
+
+```typescript
+try {
     const amount = 1000;
     const reference = '1234567890';
     const phone = '254732345678';
-    const country = 'KE';
-    const currency = 'KES';
-    
-    airtel.authorize().then(({prompt}) => {
-        const res = prompt(phone, amount, reference, country, currency)
-        console.log(res);
+
+    airtel.authorize().then(({ prompt }) => {
+        const res = prompt(phone, amount, reference)
+        console.info(res);
     })
 
     // OR
 
     await airtel.authorize();
-    const res = await airtel.prompt(phone, amount, reference, country, currency);
-    
+    const res = await airtel.prompt(phone, amount, reference);
+    console.info(res);
 } catch (error) {
-    console.log(error);
+    console.error(error);
 }
 ```
