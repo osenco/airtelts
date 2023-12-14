@@ -1,39 +1,106 @@
-import axios from "axios"
+import axios, { AxiosInstance } from "axios";
 
-export class Airtel {
- public client_id;
-    public client_secret;
-    public Client $client;
-    protected public_key = '';
-    protected token;
-    protected country = 'KE';
-    protected currency = 'KES';
+export default class Airtel {
+	protected api: AxiosInstance;
 
-      constructor(options = {}) {
-            this.client = axios.create({
-                  baseUrl: options.env == 'staging'
-                    ? 'https://openapiuat.airtel.africa/'
-                    : 'https://openapi.airtel.africa/'
-            });
-      }
-      
-protected authorize(token = null) {
-const inputBody = '{
-      "client_id": "*****************************",
-      "client_secret": "*****************************",
-      "grant_type": "client_credentials"
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-};
+	constructor(
+		protected client_id: string,
+		protected client_secret: string,
+		protected env = "live",
+		protected token = ""
+	) {
+		this.api = axios.create({
+			baseURL:
+				env === "sandbox"
+					? "https://openapiuat.airtel.africa/"
+					: "https://openapi.airtel.africa/",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+		});
+	}
 
-this.client.post('/auth/oauth2/token', inputBody,headers)
-.then(function(res) {
-    return res.data;
+	public async authorize(): Promise<Airtel> {
+		try {
+			const { data } = await this.api.post("auth/oauth2/token", {
+				client_id: this.client_id,
+				client_secret: this.client_secret,
+				grant_type: "client_credentials",
+			});
 
-this.token = res.data.access_token,
-});
-return this
-}
+			if (data.access_token) {
+				this.token = data.access_token;
+			}
+		} catch (error) {}
+
+		return this;
+	}
+
+	public async prompt(
+		phone: string,
+		amount: number,
+		reference: string | number = Math.random().toString(16).slice(2, 8).toUpperCase(),
+		country = "KE",
+		currency = "KES"
+	) {
+		try {
+			const { data } = await this.api.post(
+				"merchant/v1/payments/",
+				{
+					reference,
+					subscriber: {
+						country,
+						currency,
+						msisdn: phone.slice(-9),
+					},
+					transaction: {
+						amount,
+						country,
+						currency,
+						id: reference,
+					},
+				},
+				{
+					headers: {
+						"X-Country": country,
+						"X-Currency": currency,
+						Authorization: this.token,
+					},
+				}
+			);
+	
+			if (data.status.success) {
+				return data;
+			} else {
+				throw new Error(data.status.message);
+			}
+		} catch (error) {
+			
+		}
+	}
+
+	public async reconcile(
+		request: Request,
+		callback: CallableFunction | null = null
+	) {
+		const response = await request.json();
+
+		if (!response["transaction"]) {
+			throw new Error("No transaction data received");
+		}
+
+		const transaction = response["transaction"]["id"] ?? "";
+		const message = response["transaction"]["message"] ?? "";
+
+		if (!transaction) {
+			throw new Error(message);
+		}
+
+		if (callback) {
+			callback(response);
+		}
+
+		return response;
+	}
 }
