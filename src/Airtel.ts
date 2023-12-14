@@ -5,6 +5,11 @@ import constants from "constants";
 /**
  * Main Airtel Africa class that is the core of the SDK
  *
+ * @author Osen Concepts <hi@osen.co.ke>
+ * @version 1.0.0
+ * @since 1.0.0
+ * @copyright Osen Concepts 2023-
+ *
  * @param client_id App client ID
  * @param client_secret App client secret
  * @param country Country code
@@ -12,7 +17,10 @@ import constants from "constants";
  * @param env Environment
  * @param pin (optional) A 4 digit PIN
  * @param public_key (optional) A public key string used to encrypt the PIN
- * 
+ *
+ * @protected api AxiosInstance
+ * @private token Access token
+ *
  * @method authorize Authorize Airtel and get access token
  * @method encrypt Encrypt data using the public key
  * @method user Get user details from Airtel using phone number
@@ -24,7 +32,7 @@ import constants from "constants";
  */
 export default class Airtel {
 	protected api: AxiosInstance;
-	protected token = "";
+	private token = "";
 
 	/**
 	 * Setup Airtel class
@@ -80,7 +88,6 @@ export default class Airtel {
 	 * @param data string
 	 * @returns string
 	 * @throws Error
-	 * @see https://stackoverflow.com/a/60370250/6782707
 	 */
 	public encrypt(data: string): string {
 		const public_keyResource = crypto.publicEncrypt(
@@ -311,29 +318,29 @@ export default class Airtel {
 	/**
 	 * Reconcile a transaction
 	 *
-	 * @param response Airtel IPN payload
+	 * @param payload Airtel IPN payload
 	 * @param callback Callback function
 	 * @returns
 	 */
 	public async reconcile(
-		response: AirtelIpnPayload,
+		payload: AirtelIpnPayload,
 		callback: CallableFunction | null = null
 	) {
-		if (!response["transaction"]) {
+		if (!payload["transaction"]) {
 			throw new Error("No transaction data received");
 		}
 
-		const transaction = response["transaction"]["id"] ?? "";
-		const message = response["transaction"]["message"] ?? "";
+		const transaction = payload["transaction"]["id"] ?? "";
+		const message = payload["transaction"]["message"] ?? "";
 
 		if (!transaction) {
 			throw new Error(message);
 		}
 
 		if (callback) {
-			callback(response);
+			callback(payload);
 		}
 
-		return response;
+		return payload;
 	}
 }
