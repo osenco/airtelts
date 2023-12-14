@@ -23,11 +23,14 @@ export default class Airtel {
 
 	public async authorize(): Promise<Airtel> {
 		try {
-			const { data } = await this.api.post("auth/oauth2/token", {
-				client_id: this.client_id,
-				client_secret: this.client_secret,
-				grant_type: "client_credentials",
-			});
+			const { data }: { data: AirtelTokenResoonse } = await this.api.post(
+				"auth/oauth2/token",
+				{
+					client_id: this.client_id,
+					client_secret: this.client_secret,
+					grant_type: "client_credentials",
+				}
+			);
 
 			if (data.access_token) {
 				this.token = data.access_token;
@@ -40,52 +43,52 @@ export default class Airtel {
 	public async prompt(
 		phone: string,
 		amount: number,
-		reference: string | number = Math.random().toString(16).slice(2, 8).toUpperCase(),
+		reference: string | number = Math.random()
+			.toString(16)
+			.slice(2, 8)
+			.toUpperCase(),
 		country = "KE",
 		currency = "KES"
 	) {
 		try {
-			const { data } = await this.api.post(
-				"merchant/v1/payments/",
-				{
-					reference,
-					subscriber: {
-						country,
-						currency,
-						msisdn: phone.slice(-9),
+			const { data }: { data: AirtelPromptResponse } =
+				await this.api.post(
+					"merchant/v1/payments/",
+					{
+						reference,
+						subscriber: {
+							country,
+							currency,
+							msisdn: phone.slice(-9),
+						},
+						transaction: {
+							amount,
+							country,
+							currency,
+							id: reference,
+						},
 					},
-					transaction: {
-						amount,
-						country,
-						currency,
-						id: reference,
-					},
-				},
-				{
-					headers: {
-						"X-Country": country,
-						"X-Currency": currency,
-						Authorization: this.token,
-					},
-				}
-			);
-	
+					{
+						headers: {
+							"X-Country": country,
+							"X-Currency": currency,
+							Authorization: `Bearer ${this.token}`,
+						},
+					}
+				);
+
 			if (data.status.success) {
 				return data;
 			} else {
 				throw new Error(data.status.message);
 			}
-		} catch (error) {
-			
-		}
+		} catch (error) {}
 	}
 
 	public async reconcile(
-		request: Request,
+		response: AirtelIpnPayload,
 		callback: CallableFunction | null = null
 	) {
-		const response = await request.json();
-
 		if (!response["transaction"]) {
 			throw new Error("No transaction data received");
 		}

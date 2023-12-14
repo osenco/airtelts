@@ -46,6 +46,11 @@ try {
         const res = prompt(phone, amount, reference, country, currency)
         console.log(res);
     })
+
+    // OR
+
+    await airtel.authorize();
+    const res = await airtel.prompt(phone, amount, reference, country, currency);
     
 } catch (error) {
     console.log(error);
