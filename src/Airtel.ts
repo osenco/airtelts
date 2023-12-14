@@ -4,7 +4,6 @@ import constants from "constants";
 
 export default class Airtel {
 	protected api: AxiosInstance;
-	private encryptedPin: string = "";
 
 	constructor(
 		protected client_id: string,
@@ -62,6 +61,7 @@ export default class Airtel {
 
     public encrypt(data: string): string {
         const publicKeyResource = crypto.publicEncrypt(this.publicKey, Buffer.from('utf8'));
+
         if (!publicKeyResource) {
             throw new Error('Public key NOT Correct');
         }
@@ -74,14 +74,9 @@ export default class Airtel {
         return Buffer.from(encrypted).toString('base64');
     }
 
-    public setPin(data: string): this {
-        this.encryptedPin = this.encrypt(data);
-        return this;
-    }
-
 	public async user(phone: string): Promise<any> {
 		try {
-			const response = await this.api.get(`/standard/v1/users/${phone}`, {
+			const response = await this.api.get(`standard/v1/users/${phone}`, {
 				headers: {
 					"Content-Type": "application/json",
 					"X-Country": this.country,
@@ -103,9 +98,7 @@ export default class Airtel {
 		reference: string | number = Math.random()
 			.toString(16)
 			.slice(2, 8)
-			.toUpperCase(),
-		country = "KE",
-		currency = "KES"
+			.toUpperCase()
 	) {
 		try {
 			const { data }: { data: AirtelPromptResponse } =
@@ -114,14 +107,14 @@ export default class Airtel {
 					{
 						reference,
 						subscriber: {
-							country,
-							currency,
+							country: this.country,
+							currency: this.currency,
 							msisdn: phone.slice(-9),
 						},
 						transaction: {
 							amount,
-							country,
-							currency,
+							country: this.country,
+							currency: this.currency,
 							id: reference,
 						},
 					},
@@ -212,15 +205,10 @@ export default class Airtel {
 		reference: string | number = Math.random()
 			.toString(16)
 			.slice(2, 8)
-			.toUpperCase(),
-		fourDigitPIN: string,
-		country = "KE",
-		currency = "KES"
+			.toUpperCase()
 	) {
 		try {
-			var encryptedPIN = this.encrypt(fourDigitPIN);
-
-			console.log("encryptedPIN", encryptedPIN);
+			const encryptedPIN = this.encrypt(this.pin);
 
 			const { data }: { data: AirtelPromptResponse } =
 				await this.api.post(
