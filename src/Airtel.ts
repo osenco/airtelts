@@ -12,8 +12,8 @@ export default class Airtel {
 		this.api = axios.create({
 			baseURL:
 				env === "sandbox"
-					? "https://openapiuat.airtel.africa/"
-					: "https://openapi.airtel.africa/",
+					? "https://openapiuat.airtel.africa"
+					: "https://openapi.airtel.africa",
 			headers: {
 				Accept: "application/json",
 				"Content-Type": "application/json",
@@ -23,7 +23,7 @@ export default class Airtel {
 
 	public async authorize(): Promise<Airtel> {
 		try {
-			const { data }: { data: AirtelTokenResoonse } = await this.api.post(
+			const { data }: { data: AirtelTokenResponse } = await this.api.post(
 				"auth/oauth2/token",
 				{
 					client_id: this.client_id,
