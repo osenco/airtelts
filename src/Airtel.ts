@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
 import constants from "constants";
+import { AirtelIpnPayload, AirtelPromptResponse, AirtelRefundResponse, AirtelStatusResponse, AirtelTokenResponse } from "./types";
 
 /**
  * Main Airtel Africa class that is the core of the SDK
@@ -32,7 +33,7 @@ import constants from "constants";
  */
 export default class Airtel {
 	protected api: AxiosInstance;
-	private token = "";
+	public token = "";
 
 	/**
 	 * Setup Airtel class
@@ -74,10 +75,14 @@ export default class Airtel {
 				}
 			);
 
+			console.info(data);
+
 			if (data.access_token) {
 				this.token = data.access_token;
 			}
-		} catch (error) {}
+		} catch (error) {
+			throw error;
+		}
 
 		return this;
 	}
@@ -151,6 +156,7 @@ export default class Airtel {
 			.toUpperCase()
 	): Promise<AirtelPromptResponse> {
 		try {
+			await this.authorize();
 			const { data }: { data: AirtelPromptResponse } =
 				await this.api.post(
 					"merchant/v1/payments/",
@@ -204,7 +210,7 @@ export default class Airtel {
 				: `standard/v1/disbursements/${airtel_money_id}`;
 
 		try {
-			const { data }: { data: AirtelPromptResponse } = await this.api.get(
+			const { data }: { data: AirtelStatusResponse } = await this.api.get(
 				endpoint,
 				{
 					headers: {
@@ -326,19 +332,19 @@ export default class Airtel {
 		payload: AirtelIpnPayload,
 		callback: CallableFunction | null = null
 	) {
-		if (!payload["transaction"]) {
+		if (!payload.transaction) {
 			throw new Error("No transaction data received");
 		}
 
-		const transaction = payload["transaction"]["id"] ?? "";
-		const message = payload["transaction"]["message"] ?? "";
+		const transaction = payload["transaction"]["transaction_id"] ?? "";
+		const message = payload["transaction"]["narrative"] ?? "";
 
 		if (!transaction) {
 			throw new Error(message);
 		}
 
 		if (callback) {
-			callback(payload);
+			callback(payload.transaction);
 		}
 
 		return payload;

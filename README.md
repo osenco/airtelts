@@ -2,6 +2,11 @@
 
 This is the official TypeScript SDK for integrating with the Airtel API.
 
+## Pre-requisites
+- Create a Airtel money developer account: [https://developers.airtel.africa/user/signup](https://developers.airtel.africa/user/signup)
+- Get your client id and client secret from the developer portal.
+- If using the disbursements API, you will need to generate a public key and a PIN from the developer portal.
+
 ## Installation
 
 ### NPM
